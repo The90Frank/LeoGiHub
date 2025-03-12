@@ -21,8 +21,16 @@ unsigned int aPedalsPin = A0;
 unsigned int bPedalsPin = A1;
 unsigned int cPedalsPin = A2;
 
+unsigned int currentHandBrake = 0;
+unsigned int newHandBrake = 0;
+unsigned int handBrakePin = A6; //pin4
+
 unsigned int matrixBias = 0;
 unsigned int shifterBias = 13;
+
+void setupPins(){
+  pinMode(handBrakePin, INPUT);
+}
 
 unsigned int getMatrix() {
   unsigned int val = analogRead(matrixPin);
@@ -120,6 +128,7 @@ unsigned int normalize8(unsigned int val){
 void setup() {
   Gamepad.begin();
   Gamepad.releaseAll();
+  setupPins();
 }
 
 void loop() {
@@ -128,11 +137,14 @@ void loop() {
   newPedalsA = getAccelerator();
   newPedalsB = getBrake();
   newPedalsC = getClunch();
-  if( newShifter != currentShifter || 
-      newMatrix  != currentMatrix  ||
-      newPedalsA != currentPedalsA ||
-      newPedalsB != currentPedalsB ||
-      newPedalsC != currentPedalsC ){
+  newHandBrake = analogRead(handBrakePin);
+
+  if( newShifter   != currentShifter  || 
+      newMatrix    != currentMatrix   ||
+      newPedalsA   != currentPedalsA  ||
+      newPedalsB   != currentPedalsB  ||
+      newPedalsC   != currentPedalsC  ||
+      newHandBrake != currentHandBrake){
     Gamepad.releaseAll();
 
     currentShifter = newShifter;
@@ -151,6 +163,9 @@ void loop() {
     Gamepad.rxAxis(normalize16(newPedalsA));
     Gamepad.ryAxis(normalize16(newPedalsB));
     Gamepad.rzAxis(normalize8(newPedalsC));
+
+    currentHandBrake = newHandBrake;
+    Gamepad.zAxis(normalize8(newHandBrake));    
 
     Gamepad.write();
   }
